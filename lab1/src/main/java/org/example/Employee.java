@@ -79,7 +79,7 @@ public class Employee {
     }
     @Override
     public String toString(){
-        return String.format("Employee{name: '%s %s', email: '%s', company: '%s', position: '%s', salary: '%.2f'}",
-                name,surname,email,company,position,salary)
+        return String.format("Employee{name: '%s %s',\n email: '%s',\n company: '%s',\n position: '%s',\n salary: '%.2f'}",
+                name,surname,email,company,position,salary);
     }
 }
