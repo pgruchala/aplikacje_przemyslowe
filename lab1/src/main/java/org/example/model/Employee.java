@@ -1,4 +1,4 @@
-package org.example;
+package org.example.model;
 
 import java.util.Objects;
 
@@ -10,7 +10,7 @@ public class Employee {
     private POSITION position;
     private double salary;
 
-    public void Employee(String name, String surname, String email, String company, POSITION position){
+    public Employee(String name, String surname, String email, String company, POSITION position){
         this.name = name;
         this.surname = surname;
         this.email = email;
@@ -68,7 +68,7 @@ public class Employee {
     }
     @Override
     public int hashCode(){
-        return Objects.hash(email);
+        return this.email.hashCode();
     }
     @Override
     public boolean equals(Object o){
