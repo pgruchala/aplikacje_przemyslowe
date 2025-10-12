@@ -10,12 +10,13 @@ public class EmployeeService {
     private final List<Employee> employees = new ArrayList<>();// lista hashująca?
 
     public boolean addEmployee(Employee e){
-        if (e == null || e.getEmail() == null) {
+        if (e == null || e.getEmail() == null || e.getCompany() == null || e.getName() == null || e.getSurname() == null || e.getPosition() == null) {
             System.out.println("Invalid employee data");
         }
         boolean emailExist = employees.stream()
                         .anyMatch(employee -> e.getEmail().equalsIgnoreCase(employee.getEmail()));
         if (emailExist) {
+            System.out.println("nie mozna dodać pracownika ponieważ e mail został już użyty");
             return false;
         } else{
             employees.add(e);

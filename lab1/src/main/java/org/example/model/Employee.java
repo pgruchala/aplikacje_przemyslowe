@@ -72,14 +72,14 @@ public class Employee {
     }
     @Override
     public boolean equals(Object o){
-        if (this==o) return true;
-        if (o==null) return false;
+        if (this==o ) return true;
+        if (o == null || getClass() != o.getClass()) return false;
         Employee employee = (Employee) o;
-        return Objects.equals(email,employee.email);
+        return Objects.equals(this.email,employee.email);
     }
     @Override
     public String toString(){
         return String.format("Employee{name: '%s %s',\n email: '%s',\n company: '%s',\n position: '%s',\n salary: '%.2f'}",
-                name,surname,email,company,position,salary);
+                this.name,this.surname,this.email,this.company,this.position,this.salary);
     }
 }

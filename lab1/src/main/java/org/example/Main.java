@@ -71,6 +71,13 @@ public class Main {
         } else {
             System.out.println("Brak pracowników w systemie.");
         }
+        System.out.println("dodawanie pracownika o istniejącym mailu:");
+        Employee powtorka = new Employee("hehe","siuu","ak@mail.com","firmaKrzak",POSITION.PREZES);
+        service.addEmployee(powtorka);
 
+//        List<Employee> listEmployees2 = service.displayEmployees();
+//        for (Employee e : listEmployees2) {
+//            System.out.println(e.toString());
+//        }
     }
 }
