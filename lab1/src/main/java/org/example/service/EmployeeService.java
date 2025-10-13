@@ -1,5 +1,6 @@
 package org.example.service;
 
+import org.example.model.CompanyStatistics;
 import org.example.model.Employee;
 import org.example.model.POSITION;
 
@@ -59,10 +60,47 @@ public class EmployeeService {
                 .average()
                 .orElse(0.0);
     }
+    public double calcAvgSalary(String company){
+        return this.employees.stream().filter(e -> Objects.equals(e.getCompany(), company))
+                .mapToDouble(Employee::getSalary)
+                .average()
+                .orElse(0.0);
+    }
 
     public Optional<Employee> findEmployeeWithHighestSalary(){
         return this.employees.stream()
                 .max(Comparator.comparingDouble(Employee::getSalary));
+    }
+    public Optional<Employee> findEmployeeWithHighestSalary(String company){
+        return this.employees.stream()
+                .filter(e -> Objects.equals(e.getCompany(), company))
+                .max(Comparator.comparingDouble(Employee::getSalary));
+    }
+    public List<Employee> validateSalaryConsistency(){
+        return this.employees.stream()
+                .filter(e -> e.getSalary() < e.getPosition().getBaseSalary())
+                .collect(Collectors.toList());
+    }
+    public Map<String, CompanyStatistics> getCompanyStatistics() {
+        return employees.stream()
+                .collect(Collectors.groupingBy(
+                        Employee::getCompany,
+                        Collectors.collectingAndThen(
+                                Collectors.toList(),
+                                empList -> {
+                                    long count = empList.size();
+                                    double avgSalary = empList.stream()
+                                            .mapToDouble(Employee::getSalary)
+                                            .average()
+                                            .orElse(0.0);
+                                    String highestPaid = empList.stream()
+                                            .max(Comparator.comparingDouble(Employee::getSalary))
+                                            .map(e -> e.getName() + " " + e.getSurname())
+                                            .orElse("N/A");
+                                    return new CompanyStatistics(count, avgSalary, highestPaid);
+                                }
+                        )
+                ));
     }
 
 }

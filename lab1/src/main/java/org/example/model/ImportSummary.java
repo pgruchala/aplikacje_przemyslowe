@@ -6,12 +6,12 @@ import java.util.Set;
 
 public class ImportSummary {
     int imported;
-    List<Error> errorList;
+    List<String> errorList;
     public ImportSummary(){
         this.imported = 0;
         this.errorList = new ArrayList<>();
     }
-    public void error(Error e){
+    public void error(String e){
         this.errorList.add(e);
     }
     public void success() {
@@ -22,7 +22,7 @@ public class ImportSummary {
         return imported;
     }
 
-    public List<Error> getErrorList() {
+    public List<String> getErrorList() {
         return errorList;
     }
 
