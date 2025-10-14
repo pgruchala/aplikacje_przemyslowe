@@ -6,10 +6,12 @@ import org.example.exception.InvalidDataException;
 import org.example.model.Employee;
 import org.example.model.ImportSummary;
 import org.example.model.POSITION;
+import org.example.service.ApiService;
 import org.example.service.EmployeeService;
 import org.example.service.ImportService;
 
 import java.io.IOException;
+import java.util.List;
 
 public class Main {
     public static void main(String[] args) throws ApiException, InvalidDataException, IOException, CsvException,InterruptedException {
@@ -85,8 +87,11 @@ public class Main {
 ////        }
         ImportService importService  =new ImportService(service);
         ImportSummary csvSummary = importService.importFromCSV("employees.csv");
-        System.out.println(csvSummary.toString());
-        System.out.println(service.displayEmployees());
+//        System.out.println(csvSummary.toString());
+//        System.out.println(service.displayEmployees());
 
+        System.out.println("---------------------");
+        List<Employee> zApi = ApiService.fetchEmployeesFromAPI();
+        System.out.println(zApi);
     }
 }
