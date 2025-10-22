@@ -18,12 +18,12 @@ public class Main {
         EmployeeService service = new EmployeeService();
 
 
-//        Employee emp1 = new Employee("Ania","Kołodziejczak","ak@mail.com","komworld", POSITION.PREZES);
+        Employee emp1 = new Employee("Ania","Kołodziejczak","ak@mail.com","komworld", POSITION.PREZES);
 //        Employee emp2 = new Employee("Kamil","Maciejowski","km@mail.com","komworld", POSITION.PROGRAMISTA);
 //        Employee emp3 = new Employee("Maciej","Kamilczak","mk@mail.com","komputerswiat", POSITION.WICEPREZES);
 //        Employee emp4 = new Employee("Hubert","Lampa","hl@mail.com","NoVideo", POSITION.PREZES);
 //        Employee emp5 = new Employee("Dragomir","Panicz","dp@mail.com","GloriousComputing", POSITION.STAZYSTA);
-//        service.addEmployee(emp1);
+        service.addEmployee(emp1);
 //        service.addEmployee(emp2);
 //        service.addEmployee(emp3);
 //        service.addEmployee(emp4);
@@ -79,19 +79,19 @@ public class Main {
 //        System.out.println("dodawanie pracownika o istniejącym mailu:");
 //        Employee powtorka = new Employee("hehe","siuu","ak@mail.com","firmaKrzak",POSITION.PREZES);
 //        service.addEmployee(powtorka);
-//
-//
-////        List<Employee> listEmployees2 = service.displayEmployees();
-////        for (Employee e : listEmployees2) {
-////            System.out.println(e.toString());
-////        }
+////
+////
+//        List<Employee> listEmployees = service.displayEmployees();
+//        for (Employee e : listEmployees) {
+//            System.out.println(e.toString());
+//        }
         ImportService importService  =new ImportService(service);
         ImportSummary csvSummary = importService.importFromCSV("employees.csv");
-//        System.out.println(csvSummary.toString());
-//        System.out.println(service.displayEmployees());
+        System.out.println(csvSummary.toString());
+        System.out.println(service.displayEmployees());
 
-        System.out.println("---------------------");
-        List<Employee> zApi = ApiService.fetchEmployeesFromAPI();
-        System.out.println(zApi);
+//        System.out.println("---------------------");
+//        List<Employee> zApi = ApiService.fetchEmployeesFromAPI();
+//        System.out.println(zApi);
     }
 }

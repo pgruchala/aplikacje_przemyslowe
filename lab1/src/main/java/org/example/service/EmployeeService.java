@@ -13,6 +13,7 @@ public class EmployeeService {
     public boolean addEmployee(Employee e){
         if (e == null || e.getEmail() == null || e.getCompany() == null || e.getName() == null || e.getSurname() == null || e.getPosition() == null) {
             System.out.println("Invalid employee data");
+            return false;
         }
         boolean emailExist = employees.stream()
                         .anyMatch(employee -> e.getEmail().equalsIgnoreCase(employee.getEmail()));

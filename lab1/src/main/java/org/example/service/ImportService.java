@@ -10,6 +10,7 @@ import org.example.model.POSITION;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.Reader;
 import java.util.List;
 
 public class ImportService {
@@ -20,12 +21,17 @@ public class ImportService {
     }
 
     public ImportSummary importFromCSV(String filePath) throws IOException, CsvException {
+        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))){
+            return importFromReader(reader);
+        }
+    }
+    public ImportSummary importFromReader(Reader sourceReader) throws IOException {
         ImportSummary summary = new ImportSummary();
         int lineNumber = 0;
 
-        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))){
+        try (BufferedReader reader = new BufferedReader(sourceReader)) {
             String line;
-            if ((line = reader.readLine()) != null) {
+            if (reader.readLine() != null) {
                 lineNumber++;
             }
             while ((line = reader.readLine()) != null){

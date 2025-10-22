@@ -17,8 +17,16 @@ import java.util.List;
 public class ApiService {
     private static final String API_URL = "https://jsonplaceholder.typicode.com/users";
     private static final Gson GSON = new Gson();
-    public static List<Employee> fetchEmployeesFromAPI() throws ApiException {
-        HttpClient client = HttpClient.newHttpClient();
+    private final HttpClient client;
+
+    public ApiService(HttpClient client) {
+        this.client = client;
+    }
+    public ApiService() {
+        this.client = HttpClient.newHttpClient();
+    }
+
+    public List<Employee> fetchEmployeesFromAPI() throws ApiException {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(API_URL))
                 .GET()
@@ -37,16 +45,14 @@ public class ApiService {
         }
     }
 
-    private static List<Employee> parseJson(String json) throws ApiException {
+    private List<Employee> parseJson(String json) throws ApiException {
         List<Employee> employees = new ArrayList<>();
         POSITION basePos = POSITION.PROGRAMISTA;
 
         try {
             JsonElement root = JsonParser.parseString(json);
-
             if (!root.isJsonArray()) {
                 throw new ApiException("Oczekiwana jest tablica użytkowników");
-
             }
             JsonArray usersArray = root.getAsJsonArray();
 
@@ -86,6 +92,8 @@ public class ApiService {
                 employees.add(employee);
             }
 
+        } catch (ApiException apiEx) {
+            throw apiEx;
         } catch (Exception e) {
             throw new ApiException("Błąd parsowania JSON lub mapowania na Employee", e);
         }
