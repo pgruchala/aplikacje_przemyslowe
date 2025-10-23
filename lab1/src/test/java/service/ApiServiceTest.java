@@ -150,7 +150,7 @@ public class ApiServiceTest {
     }
     @Nested
     class JSONInvalid{
-        private ApiException thrownException;
+        private ApiException error;
 
         @BeforeEach
         void setUp() throws IOException, InterruptedException {
@@ -160,13 +160,13 @@ public class ApiServiceTest {
             when(mockHttpClient.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class)))
                     .thenReturn(mockHttpRes);
 
-            thrownException = assertThrows(ApiException.class, () -> {
+            error = assertThrows(ApiException.class, () -> {
                 apiService.fetchEmployeesFromAPI();
             });
         }
         @Test
         void exceptionMessageShouldIndicateInvalidStructure() {
-            assertTrue(thrownException.getMessage().contains("Oczekiwana jest tablica użytkowników"));
+            assertTrue(error.getMessage().contains("Oczekiwana jest tablica użytkowników"));
         }
     }
 

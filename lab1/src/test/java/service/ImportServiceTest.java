@@ -5,6 +5,7 @@ import org.example.model.ImportSummary;
 import org.example.service.EmployeeService;
 import org.example.service.ImportService;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
@@ -31,63 +32,127 @@ public class ImportServiceTest {
 
     private String csvHeader = "Name;Surname;Email;Company;Position;Salary\n";
 
-    @Test
-    void testImportFromReader_success() throws IOException {
-        String csvData = csvHeader +
-                "Jan;Kowalski;jk@mail.com;TestCorp;PROGRAMISTA;9000\n" +
-                "Anna;Nowak;an@mail.com;TestCorp;MANAGER;13000\n";
-        StringReader reader = new StringReader(csvData);
+    @Nested
+    class WhenImportingFullyValidFile {
+        private ImportSummary summary;
 
-        when(mockEmployeeService.addEmployee(any(Employee.class))).thenReturn(true);
+        @BeforeEach
+        void setUp() throws IOException {
+            String csvData = csvHeader +
+                    "Jan;Kowalski;jk@mail.com;TestCorp;PROGRAMISTA;9000\n" +
+                    "Anna;Nowak;an@mail.com;TestCorp;MANAGER;13000\n";
+            StringReader reader = new StringReader(csvData);
 
-        ImportSummary summary = importService.importFromReader(reader);
+            when(mockEmployeeService.addEmployee(any(Employee.class))).thenReturn(true);
 
-        assertEquals(2, summary.getImported(), "Should import 2 employees");
-        assertTrue(summary.getErrorList().isEmpty(), "Error list should be empty");
+            summary = importService.importFromReader(reader);
+        }
 
-        verify(mockEmployeeService, times(2)).addEmployee(any(Employee.class));
+        @Test
+        void shouldReportCorrectImportCount() {
+            assertEquals(2, summary.getImported(), "Should import 2 employees");
+        }
+
+        @Test
+        void shouldReportNoErrors() {
+            assertTrue(summary.getErrorList().isEmpty(), "Error list should be empty");
+        }
+
+        @Test
+        void shouldAttemptToAddEachEmployee() {
+            verify(mockEmployeeService, times(2)).addEmployee(any(Employee.class));
+        }
     }
-    @Test
-    void testImportFromReader_handlesVariousErrors() throws IOException {
-        String csvData = csvHeader +
-                "Jan;Kowalski;jk@mail.com;TestCorp;PROGRAMISTA;9000\n" + // OK
-                "Anna;Nowak;an@mail.com;TestCorp;DYREKTOR;15000\n" +      // Błędne stanowisko
-                "Piotr;Zet;pz@mail.com;TestCorp;STAZYSTA;-100\n" +        // Ujemne wynagrodzenie
-                "Maria;Lis;ml@mail.com;TestCorp;PREZES;25000;ZbednaKolumna\n" + // Zła liczba kolumn
-                "Adam;Kot;ak@mail.com;TestCorp;WICEPREZES;18000\n";       // OK
-        StringReader reader = new StringReader(csvData);
+    @Nested
+    class WhenImportingFileWithVariousErrors {
+        private ImportSummary summary;
 
-        when(mockEmployeeService.addEmployee(any(Employee.class))).thenReturn(true);
+        @BeforeEach
+        void setUp() throws IOException {
+            String csvData = csvHeader +
+                    "Jan;Kowalski;jk@mail.com;TestCorp;PROGRAMISTA;9000\n" + // OK
+                    "Anna;Nowak;an@mail.com;TestCorp;DYREKTOR;15000\n" +      // Błędne stanowisko
+                    "Piotr;Zet;pz@mail.com;TestCorp;STAZYSTA;-100\n" +        // Ujemne wynagrodzenie
+                    "Maria;Lis;ml@mail.com;TestCorp;PREZES;25000;ZbednaKolumna\n" + // Zła liczba kolumn
+                    "Adam;Kot;ak@mail.com;TestCorp;WICEPREZES;18000\n";       // OK
+            StringReader reader = new StringReader(csvData);
 
-        ImportSummary summary = importService.importFromReader(reader);
+            when(mockEmployeeService.addEmployee(any(Employee.class))).thenReturn(true);
 
-        assertEquals(2, summary.getImported(), "Should import 2 valid employees");
-        assertEquals(3, summary.getErrorList().size(), "Should report 3 errors");
+            summary = importService.importFromReader(reader);
+        }
 
-        assertTrue(summary.getErrorList().get(0).contains("Nieprawidłowe stanowisko: DYREKTOR"), "Missing position error");
-        assertTrue(summary.getErrorList().get(1).contains("Wynagrodzenie musi być dodatnie"), "Missing negative salary error");
-        assertTrue(summary.getErrorList().get(2).contains("Nieprawidłowa liczba kolumn"), "Missing column count error");
+        @Test
+        void shouldReportCorrectImportCount() {
+            assertEquals(2, summary.getImported(), "Should import 2 valid employees");
+        }
 
-        verify(mockEmployeeService, times(2)).addEmployee(any(Employee.class));
+        @Test
+        void shouldReportCorrectErrorCount() {
+            assertEquals(3, summary.getErrorList().size(), "Should report 3 errors");
+        }
+
+        @Test
+        void shouldReportInvalidPositionError() {
+            assertTrue(summary.getErrorList().stream()
+                    .anyMatch(e -> e.contains("Nieprawidłowe stanowisko: DYREKTOR")), "Missing position error");
+        }
+
+        @Test
+        void shouldReportNegativeSalaryError() {
+            assertTrue(summary.getErrorList().stream()
+                    .anyMatch(e -> e.contains("Wynagrodzenie musi być dodatnie")), "Missing negative salary error");
+        }
+
+        @Test
+        void shouldReportColumnCountError() {
+            assertTrue(summary.getErrorList().stream()
+                    .anyMatch(e -> e.contains("Nieprawidłowa liczba kolumn")), "Missing column count error");
+        }
+
+        @Test
+        void shouldAttemptToAddOnlyValidEmployees() {
+            verify(mockEmployeeService, times(2)).addEmployee(any(Employee.class));
+        }
     }
 
-    @Test
-    void testImportFromReader_handlesDuplicateEmail() throws IOException {
-        String csvData = csvHeader +
-                "Jan;Kowalski;jk@mail.com;TestCorp;PROGRAMISTA;9000\n" +
-                "Anna;Nowak;jk@mail.com;TestCorp;MANAGER;13000\n";
-        StringReader reader = new StringReader(csvData);
+    @Nested
+    class WhenImportingFileWithDuplicateEmail {
+        private ImportSummary summary;
 
-        when(mockEmployeeService.addEmployee(any(Employee.class)))
-                .thenReturn(true)
-                .thenReturn(false);
+        @BeforeEach
+        void setUp() throws IOException {
+            String csvData = csvHeader +
+                    "Jan;Kowalski;jk@mail.com;TestCorp;PROGRAMISTA;9000\n" +
+                    "Anna;Nowak;jk@mail.com;TestCorp;MANAGER;13000\n";
+            StringReader reader = new StringReader(csvData);
 
-        ImportSummary summary = importService.importFromReader(reader);
+            when(mockEmployeeService.addEmployee(any(Employee.class)))
+                    .thenReturn(true)  //Jan - sukces
+                    .thenReturn(false); //Anna - porażka
 
-        assertEquals(1, summary.getImported(), "Should import 1 employee");
-        assertEquals(1, summary.getErrorList().size(), "Should have 1 error");
-        assertTrue(summary.getErrorList().get(0).contains("prawdopodobnie duplikat emaila"), "Missing duplicate email error");
-        verify(mockEmployeeService, times(2)).addEmployee(any(Employee.class));
+            summary = importService.importFromReader(reader);
+        }
+
+        @Test
+        void shouldReportCorrectImportCount() {
+            assertEquals(1, summary.getImported(), "Should import 1 employee");
+        }
+
+        @Test
+        void shouldReportCorrectErrorCount() {
+            assertEquals(1, summary.getErrorList().size(), "Should have 1 error");
+        }
+
+        @Test
+        void shouldReportDuplicateEmailError() {
+            assertTrue(summary.getErrorList().get(0).contains("prawdopodobnie duplikat emaila"), "Missing duplicate email error");
+        }
+
+        @Test
+        void shouldAttemptToAddBothEmployees() {
+            verify(mockEmployeeService, times(2)).addEmployee(any(Employee.class));
+        }
     }
 
     @Test

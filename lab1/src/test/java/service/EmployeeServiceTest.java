@@ -5,6 +5,7 @@ import org.example.model.Employee;
 import org.example.model.POSITION;
 import org.example.service.EmployeeService;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -47,6 +48,12 @@ public class EmployeeServiceTest {
         employeeService.addEmployee(e1);
         boolean res = employeeService.addEmployee(e6p);
         assertFalse(res,"User with duplicated e-mail has been added");
+    }
+
+    @Test
+    void TestAddNullEmplyee_False(){
+        boolean res = employeeService.addEmployee(null);
+        assertFalse(res, "Added null employee");
     }
 
     @Test
@@ -126,70 +133,133 @@ public class EmployeeServiceTest {
         assertTrue(result.isEmpty(), "Optional should be empty for empty list");
     }
 
-    @Test
-    void TestFindEmployeeWithHighestSalary_findsCorrectly(){
-        addEmployees(e1, e2, e3);
-        Optional<Employee> result = employeeService.findEmployeeWithHighestSalary();
-        assertTrue(result.isPresent(), "Optional should contain an employee");
-        assertEquals(e1, result.get(), "Incorrect employee found as highest paid");
+    @Nested
+    class WhenFindingHighestSalaryOverall {
+        private Optional<Employee> result;
+
+        @BeforeEach
+        void setUp() {
+            addEmployees(e1, e2, e3);
+            result = employeeService.findEmployeeWithHighestSalary();
+        }
+
+        @Test
+        void shouldFindAnEmployee() {
+            assertTrue(result.isPresent(), "Optional should contain an employee");
+        }
+
+        @Test
+        void shouldFindTheCorrectEmployee() {
+            assertEquals(e1, result.get(), "Incorrect employee found as highest paid");
+        }
     }
 
-    @Test
-    void TestFindEmployeeWithHighestSalary_byCompany(){
-        addEmployees(e1, e2, e3);
-        Optional<Employee> result = employeeService.findEmployeeWithHighestSalary("komworld");
-        assertTrue(result.isPresent(), "Optional should contain an employee for 'komworld'");
-        assertEquals(e1, result.get(), "Incorrect employee found as highest paid for 'komworld'");
+    @Nested
+    class WhenFindingHighestSalaryByCompany {
+        private Optional<Employee> result;
+
+        @BeforeEach
+        void setUp() {
+            addEmployees(e1, e2, e3);
+            result = employeeService.findEmployeeWithHighestSalary("komworld");
+        }
+
+        @Test
+        void shouldFindAnEmployee() {
+            assertTrue(result.isPresent(), "Optional should contain an employee for 'komworld'");
+        }
+
+        @Test
+        void shouldFindTheCorrectEmployee() {
+            assertEquals(e1, result.get(), "Incorrect employee found as highest paid for 'komworld'");
+        }
     }
 
-    @Test
-    void TestValidateSalaryConsistency_findsInvalid(){
-        e5.setSalary(2500.0);
-        addEmployees(e1, e2, e5);
+    @Nested
+    class WhenValidatingSalaryWithInvalidData {
+        private List<Employee> result;
 
-        List<Employee> result = employeeService.validateSalaryConsistency();
+        @BeforeEach
+        void setUp() {
+            e5.setSalary(2500.0);
+            addEmployees(e1, e2, e5);
+            result = employeeService.validateSalaryConsistency();
+        }
 
-        assertEquals(1, result.size(), "Should find one employee with inconsistent salary");
-        assertTrue(result.contains(e5), "The list should contain the specific employee with low salary");
+        @Test
+        void shouldFindCorrectNumberOfInvalid() {
+            assertEquals(1, result.size(), "Should find one employee with inconsistent salary");
+        }
+
+        @Test
+        void shouldFindSpecificInvalidEmployee() {
+            assertTrue(result.contains(e5), "The list should contain the specific employee with low salary");
+        }
     }
 
-    @Test
-    void TestValidateSalaryConsistency_findsNone(){
-        addEmployees(e1, e2, e3, e4, e5);
-        List<Employee> result = employeeService.validateSalaryConsistency();
-        assertTrue(result.isEmpty(), "Should not find any employees with inconsistent salary");
+    @Nested
+    class WhenValidatingSalaryWithValidData {
+
+        @Test
+        void shouldNotFindAnyInvalidEmployees() {
+            addEmployees(e1, e2, e3, e4, e5);
+            List<Employee> result = employeeService.validateSalaryConsistency();
+            assertTrue(result.isEmpty(), "Should not find any employees with inconsistent salary");
+        }
     }
 
-    @Test
-    void TestGetCompanyStatistics_groupsCorrectly(){
-        addEmployees(e1, e2, e3, e4, e5);
-        Map<String, CompanyStatistics> stats = employeeService.getCompanyStatistics();
+    @Nested
+    class WhenGettingStatisticsForMultipleCompanies {
+        private Map<String, CompanyStatistics> stats;
 
-        assertEquals(4, stats.size(), "Should group employees into 4 companies");
-        assertTrue(stats.containsKey("GloriousComputing"), "Stats should contain key 'GloriousComputing'");
+        @BeforeEach
+        void setUp() {
+            addEmployees(e1, e2, e3, e4, e5);
+            stats = employeeService.getCompanyStatistics();
+        }
+
+        @Test
+        void shouldGroupCorrectly() {
+            assertEquals(4, stats.size(), "Should group employees into 4 companies");
+        }
+
+        @Test
+        void shouldContainGloriousComputing() {
+            assertTrue(stats.containsKey("GloriousComputing"), "Stats should contain key 'GloriousComputing'");
+        }
     }
 
-    @Test
-    void TestGetCompanyStatistics_statsForKomworld(){
-        addEmployees(e1, e2, e3);
-        Map<String, CompanyStatistics> stats = employeeService.getCompanyStatistics();
+    @Nested
+    class WhenGettingStatisticsForKomworld {
+        private CompanyStatistics komworldStats;
 
-        CompanyStatistics komworldStats = stats.get("komworld");
-        assertNotNull(komworldStats, "'komworld' stats should not be null");
-        assertEquals(2, komworldStats.getEmployeeCount(), "Employee count for 'komworld' is incorrect");
-        assertEquals(16500.0, komworldStats.getAvgSalary(), 0.01, "Average salary for 'komworld' is incorrect");
-        assertEquals("Ania Kołodziejczak", komworldStats.getHighestPaid(), "Highest paid employee for 'komworld' is incorrect");
+        @BeforeEach
+        void setUp() {
+            addEmployees(e1, e2, e3);
+            Map<String, CompanyStatistics> stats = employeeService.getCompanyStatistics();
+            komworldStats = stats.get("komworld");
+        }
+
+        @Test
+        void shouldGenerateNonNullStatistics() {
+            assertNotNull(komworldStats, "'komworld' stats should not be null");
+        }
+
+        @Test
+        void shouldCountEmployeesCorrectly() {
+            assertEquals(2, komworldStats.getEmployeeCount(), "Employee count for 'komworld' is incorrect");
+        }
+
+        @Test
+        void shouldCalculateAverageSalaryCorrectly() {
+            assertEquals(16500.0, komworldStats.getAvgSalary(), 0.01, "Average salary for 'komworld' is incorrect");
+        }
+
+        @Test
+        void shouldFindHighestPaidEmployeeCorrectly() {
+            assertEquals("Ania Kołodziejczak", komworldStats.getHighestPaid(), "Highest paid employee for 'komworld' is incorrect");
+        }
     }
 
-    @Test
-    void TestGetCompanyStatistics_statsForSingleEmployeeCompany(){
-        addEmployees(e1, e3);
-        Map<String, CompanyStatistics> stats = employeeService.getCompanyStatistics();
 
-        CompanyStatistics komputerswiatStats = stats.get("komputerswiat");
-        assertNotNull(komputerswiatStats, "'komputerswiat' stats should not be null");
-        assertEquals(1, komputerswiatStats.getEmployeeCount(), "Employee count for 'komputerswiat' is incorrect");
-        assertEquals(18000.0, komputerswiatStats.getAvgSalary(), 0.01, "Average salary for 'komputerswiat' is incorrect");
-        assertEquals("Maciej Kamilczak", komputerswiatStats.getHighestPaid(), "Highest paid employee for 'komputerswiat' is incorrect");
-    }
 }
