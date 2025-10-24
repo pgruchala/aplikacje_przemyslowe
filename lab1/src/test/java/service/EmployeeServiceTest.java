@@ -82,15 +82,20 @@ public class EmployeeServiceTest {
     void TestSearchByCompany_findsMultiple(){
         addEmployees(e1, e2, e3);
         List<Employee> result = employeeService.searchByCompany("komworld");
-        assertEquals(2, result.size(), "Should find 2 employees for 'komworld'");
-        assertTrue(result.containsAll(List.of(e1, e2)), "Result list doesn't contain expected employees");
+        assertAll(
+                ()-> assertEquals(2, result.size(), "Should find 2 employees for 'komworld'"),
+                ()->assertTrue(result.containsAll(List.of(e1, e2)), "Result list doesn't contain expected employees")
+        );
+
     }
     @Test
     void TestSearchByCompany_findsOne(){
         addEmployees(e1, e2, e3);
         List<Employee> result = employeeService.searchByCompany("komputerswiat");
-        assertEquals(1, result.size(), "Should find 1 employee for 'komputerswiat'");
-        assertTrue(result.contains(e3), "Result list doesn't contain expected employee");
+        assertAll(
+                ()->assertEquals(1, result.size(), "Should find 1 employee for 'komputerswiat'"),
+                ()->assertTrue(result.contains(e3), "Result list doesn't contain expected employee")
+        );
     }
 
     @Test
@@ -107,7 +112,6 @@ public class EmployeeServiceTest {
     }
     @Test
     void TestCalcAvgSalary_calculatesCorrectly(){
-        // e1 (25000) + e2 (8000) + e3 (18000) = 51000. Avg = 17000
         addEmployees(e1, e2, e3);
         double avg = employeeService.calcAvgSalary();
         assertEquals(17000.0, avg, 0.01, "Average salary calculation is incorrect");

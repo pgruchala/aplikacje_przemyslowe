@@ -68,7 +68,7 @@ public class ApiServiceTest {
             when(mockHttpClient.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class))).thenReturn(mockHttpRes);
 
             employees = apiService.fetchEmployeesFromAPI();
-
+//
             if (employees.size()>0) e1 = employees.get(0);
             if (employees.size()>1) e2 = employees.get(1);
         }
@@ -79,31 +79,43 @@ public class ApiServiceTest {
         }
         @Test
         void TestShouldParseEmployeeName(){
-            assertNotNull(e1,"Employee cannot be null");
-            assertEquals("Leanne",e1.getName(),"Error parsing first name of an employee");
+            assertAll(
+                    ()-> assertNotNull(e1,"Employee cannot be null"),
+                    ()->assertEquals("Leanne",e1.getName(),"Error parsing first name of an employee")
+            );
         }
         @Test
         void shouldParseFirstEmployeeSurname() {
-            assertNotNull(e1, "First employee should not be null");
-            assertEquals("Graham", e1.getSurname());
+            assertAll(
+                    ()->assertNotNull(e1, "First employee should not be null"),
+                    ()->assertEquals("Graham", e1.getSurname())
+            );
         }
 
         @Test
         void shouldParseFirstEmployeeEmail() {
-            assertNotNull(e1, "First employee should not be null");
-            assertEquals("Sincere@april.biz", e1.getEmail());
+            assertAll(
+                    () ->assertNotNull(e1, "First employee should not be null"),
+                    ()->assertEquals("Sincere@april.biz", e1.getEmail())
+            );
+
         }
 
         @Test
         void shouldParseFirstEmployeeCompany() {
-            assertNotNull(e1, "First employee should not be null");
-            assertEquals("Romaguera-Crona", e1.getCompany());
+            assertAll(
+                    () -> assertNotNull(e1, "First employee should not be null"),
+                    () -> assertEquals("Romaguera-Crona", e1.getCompany())
+            );
+
         }
 
         @Test
         void shouldParseSecondEmployeeName() {
-            assertNotNull(e2, "Second employee should not be null");
-            assertEquals("Ervin", e2.getName());
+            assertAll(
+                    () -> assertNotNull(e2, "Second employee should not be null"),
+                    () -> assertEquals("Ervin", e2.getName())
+            );
         }
     }
     @Nested
