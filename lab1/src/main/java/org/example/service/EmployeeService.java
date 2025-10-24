@@ -3,10 +3,13 @@ package org.example.service;
 import org.example.model.CompanyStatistics;
 import org.example.model.Employee;
 import org.example.model.POSITION;
+import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
+
+@Service
 public class EmployeeService {
     private final List<Employee> employees = new ArrayList<>();// lista hashująca?
 

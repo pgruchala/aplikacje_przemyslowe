@@ -6,6 +6,7 @@ import org.example.exception.InvalidDataException;
 import org.example.model.Employee;
 import org.example.model.ImportSummary;
 import org.example.model.POSITION;
+import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -13,8 +14,9 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.List;
 
+@Service
 public class ImportService {
-    private EmployeeService e_service;
+    private final EmployeeService e_service;
 
     public ImportService(EmployeeService e_service) {
         this.e_service = e_service;

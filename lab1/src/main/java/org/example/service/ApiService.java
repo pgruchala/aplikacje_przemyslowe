@@ -5,6 +5,8 @@ import org.example.exception.ApiException;
 import org.example.model.Employee;
 import org.example.model.ImportSummary;
 import org.example.model.POSITION;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.net.URI;
@@ -14,21 +16,21 @@ import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.List;
 
+@Service
 public class ApiService {
-    private static final String API_URL = "https://jsonplaceholder.typicode.com/users";
-    private static final Gson GSON = new Gson();
+    private final String apiUrl;
+    private final Gson gson;
     private final HttpClient client;
 
-    public ApiService(HttpClient client) {
+    public ApiService(HttpClient client, Gson gson, @Value("${app.api.url}") String apiUrl) {
         this.client = client;
-    }
-    public ApiService() {
-        this.client = HttpClient.newHttpClient();
+        this.gson = gson;
+        this.apiUrl = apiUrl;
     }
 
     public List<Employee> fetchEmployeesFromAPI() throws ApiException {
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(API_URL))
+                .uri(URI.create(apiUrl))
                 .GET()
                 .build();
         try {
@@ -41,7 +43,7 @@ public class ApiService {
             return parseJson(response.body());
 
         } catch (IOException | InterruptedException e) {
-            throw new ApiException("Błąd komunikacji z API: " + API_URL, e);
+            throw new ApiException("Błąd komunikacji z API: " + apiUrl, e);
         }
     }
 
@@ -50,7 +52,7 @@ public class ApiService {
         POSITION basePos = POSITION.PROGRAMISTA;
 
         try {
-            JsonElement root = JsonParser.parseString(json);
+            JsonElement root = this.gson.fromJson(json, JsonElement.class);
             if (!root.isJsonArray()) {
                 throw new ApiException("Oczekiwana jest tablica użytkowników");
             }

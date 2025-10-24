@@ -1,0 +1,9 @@
+Name;Surname;Email;Company;Position;Salary
+Jan;Kowalski;jan.kowalski@example.com;ExampleCorp;MANAGER;12000
+Anna;Nowak;anna.nowak@example.com;ExampleCorp;PROGRAMISTA;8000
+Piotr;Zieliński;piotr.zielinski@example.com;AnotherCorp;STAZYSTA;3500
+Maria;Wiśniewska;maria.wisniewska@example.com;ExampleCorp;WICEPREZES;19000
+Bad;Line;bad.email@example.com;BadCorp;INVALID_POS;5000
+Too;Few;Cols;test@test.com;MANAGER
+Jan;Kowalski;jan.kowalski@example.com;Duplicate;MANAGER;12000
+Adam;Malinowski;adam.malinowski@example.com;ExampleCorp;PROGRAMISTA;7000

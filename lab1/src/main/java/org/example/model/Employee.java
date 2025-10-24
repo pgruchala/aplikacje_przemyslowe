@@ -18,6 +18,15 @@ public class Employee {
         this.position = position;
         this.salary = position.getBaseSalary();
     }
+    public Employee(String name, String surname, String email, String company, POSITION position, double salary) {
+        this.name = name;
+        this.surname = surname;
+        this.email = email;
+        this.company = company;
+        this.position = position;
+        if (salary<0){this.salary=salary;}else{this.salary= position.getBaseSalary();}
+
+    }
 
     public String getName() {
         return name;
