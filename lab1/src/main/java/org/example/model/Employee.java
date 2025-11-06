@@ -9,6 +9,7 @@ public class Employee {
     private String company;
     private POSITION position;
     private double salary;
+    private EmploymentStatus status;
 
     public Employee(String name, String surname, String email, String company, POSITION position){
         this.name = name;
@@ -17,6 +18,7 @@ public class Employee {
         this.company = company;
         this.position = position;
         this.salary = position.getBaseSalary();
+        this.status = EmploymentStatus.ACTIVE;
     }
     public Employee(String name, String surname, String email, String company, POSITION position, double salary) {
         this.name = name;
@@ -25,6 +27,7 @@ public class Employee {
         this.company = company;
         this.position = position;
         if (salary<0){this.salary=salary;}else{this.salary= position.getBaseSalary();}
+        this.status = EmploymentStatus.ACTIVE;
 
     }
 
@@ -75,6 +78,11 @@ public class Employee {
     public void setSalary(double salary) {
         this.salary = salary;
     }
+
+    public EmploymentStatus getStatus() { return status; }
+
+    public void setStatus(EmploymentStatus status) { this.status = status; }
+
     @Override
     public int hashCode(){
         return this.email.hashCode();
@@ -88,7 +96,7 @@ public class Employee {
     }
     @Override
     public String toString(){
-        return String.format("Employee{name: '%s %s',\n email: '%s',\n company: '%s',\n position: '%s',\n salary: '%.2f'}",
-                this.name,this.surname,this.email,this.company,this.position,this.salary);
+        return String.format("Employee{name: '%s %s',\n email: '%s',\n company: '%s',\n position: '%s',\n salary: '%.2f',\n status: '%s'}",
+                this.name,this.surname,this.email,this.company,this.position,this.salary, this.status);
     }
 }

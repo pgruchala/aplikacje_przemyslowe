@@ -1,5 +1,6 @@
 package service;
 
+import org.example.exception.DuplicateEmailException;
 import org.example.model.CompanyStatistics;
 import org.example.model.Employee;
 import org.example.model.POSITION;
@@ -39,21 +40,28 @@ public class EmployeeServiceTest {
     //testy dodawania
     @Test
     void TestAddEmployee_returnTrue(){
-        boolean res = employeeService.addEmployee(e1);
-        assertTrue(res,"Something went wrong while adding employee");
+        Employee res = employeeService.addEmployee(e1);
+        assertAll(
+                () ->assertNotNull(res, "Something went wrong while adding employee, returned null"),
+                ()->assertEquals(e1.getEmail(), res.getEmail())
+        );
+        assertNotNull(res, "Something went wrong while adding employee, returned null");
+        assertEquals(e1.getEmail(), res.getEmail());
     }
 
     @Test
     void TestAddEmployee_duplicated(){
         employeeService.addEmployee(e1);
-        boolean res = employeeService.addEmployee(e6p);
-        assertFalse(res,"User with duplicated e-mail has been added");
+        assertThrows(DuplicateEmailException.class, () -> {
+            employeeService.addEmployee(e6p);
+        }, "Should throw DuplicateEmailException for duplicate email");
     }
 
     @Test
     void TestAddNullEmplyee_False(){
-        boolean res = employeeService.addEmployee(null);
-        assertFalse(res, "Added null employee");
+        assertThrows(IllegalArgumentException.class, () -> {
+            employeeService.addEmployee(null);
+        }, "Should throw IllegalArgumentException for null employee");
     }
 
     @Test
@@ -66,7 +74,10 @@ public class EmployeeServiceTest {
     @Test
     void TestAddEmployee_doesNotAppendToList(){
         employeeService.addEmployee(e1);
-        employeeService.addEmployee(e6p);
+        try {
+            employeeService.addEmployee(e6p);
+        } catch (DuplicateEmailException e) {
+        }
         int listSize = employeeService.displayEmployees().size();
         assertEquals(1, listSize, "List size should not increase when adding a duplicate");
     }

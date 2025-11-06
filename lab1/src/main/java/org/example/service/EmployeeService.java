@@ -1,7 +1,10 @@
 package org.example.service;
 
+import org.example.exception.DuplicateEmailException;
+import org.example.exception.EmployeeNotFoundException;
 import org.example.model.CompanyStatistics;
 import org.example.model.Employee;
+import org.example.model.EmploymentStatus;
 import org.example.model.POSITION;
 import org.springframework.stereotype.Service;
 
@@ -11,82 +14,137 @@ import java.util.stream.Collectors;
 
 @Service
 public class EmployeeService {
-    private final List<Employee> employees = new ArrayList<>();// lista hashująca?
+    private final Map<String, Employee> employees = new HashMap<>();
 
-    public boolean addEmployee(Employee e){
+    public Employee addEmployee(Employee e) {
         if (e == null || e.getEmail() == null || e.getCompany() == null || e.getName() == null || e.getSurname() == null || e.getPosition() == null) {
-            System.out.println("Invalid employee data");
-            return false;
+            throw new IllegalArgumentException("Nieprawidłowe dane pracownika. Wszystkie pola są wymagane.");
         }
-        boolean emailExist = employees.stream()
-                        .anyMatch(employee -> e.getEmail().equalsIgnoreCase(employee.getEmail()));
-        if (emailExist) {
-            System.out.println("nie mozna dodać pracownika ponieważ e mail został już użyty");
-            return false;
-        } else{
-            employees.add(e);
+
+        if (employees.containsKey(e.getEmail().toLowerCase())) {
+            throw new DuplicateEmailException("Pracownik z adresem e-mail '" + e.getEmail() + "' już istnieje.");
         }
-        return true;
+
+        employees.put(e.getEmail().toLowerCase(), e);
+        return e;
     }
 
-    public List<Employee> displayEmployees(){
-        return new ArrayList<>(employees);
+    public List<Employee> displayEmployees() {
+        return new ArrayList<>(employees.values());
     }
 
-    public List<Employee> searchByCompany(String companyName){
-        return employees.stream().filter(e -> Objects.equals(e.getCompany(), companyName))
+    public Optional<Employee> getEmployeeByEmail(String email) {
+        return Optional.ofNullable(employees.get(email.toLowerCase()));
+    }
+
+    public Employee updateEmployee(String email, Employee updatedEmployeeData) {
+        Employee existingEmployee = employees.get(email.toLowerCase());
+
+        if (existingEmployee == null) {
+            throw new EmployeeNotFoundException("Nie znaleziono pracownika z e-mailem: " + email);
+        }
+
+        existingEmployee.setName(updatedEmployeeData.getName());
+        existingEmployee.setSurname(updatedEmployeeData.getSurname());
+        existingEmployee.setCompany(updatedEmployeeData.getCompany());
+        existingEmployee.setPosition(updatedEmployeeData.getPosition());
+        existingEmployee.setSalary(updatedEmployeeData.getSalary());
+        existingEmployee.setStatus(updatedEmployeeData.getStatus());
+
+        employees.put(email.toLowerCase(), existingEmployee);
+        return existingEmployee;
+    }
+
+    public boolean deleteEmployee(String email) {
+        Employee removed = employees.remove(email.toLowerCase());
+        return removed != null;
+    }
+
+    public Optional<Employee> updateEmployeeStatus(String email, EmploymentStatus status) {
+        Employee employee = employees.get(email.toLowerCase());
+        if (employee != null) {
+            employee.setStatus(status);
+            employees.put(email.toLowerCase(), employee);
+            return Optional.of(employee);
+        }
+        return Optional.empty();
+    }
+
+    public List<Employee> getEmployeesByStatus(EmploymentStatus status) {
+        return employees.values().stream()
+                .filter(e -> e.getStatus() == status)
+                .collect(Collectors.toList());
+    }
+
+    public Map<EmploymentStatus, Long> countByStatus() {
+        return employees.values().stream()
+                .collect(Collectors.groupingBy(
+                        Employee::getStatus,
+                        Collectors.counting()
+                ));
+    }
+
+
+    public List<Employee> searchByCompany(String companyName) {
+        return employees.values().stream()
+                .filter(e -> Objects.equals(e.getCompany(), companyName))
                 .collect(Collectors.toList());
     }
 
     public List<Employee> groupBySurname() {
-        return this.employees.stream().sorted(Comparator.comparing(Employee::getSurname)
+        return this.employees.values().stream()
+                .sorted(Comparator.comparing(Employee::getSurname)
                         .thenComparing(Employee::getName))
                 .collect(Collectors.toList());
     }
 
-    public Map<POSITION, List<Employee>> groupByPosition(){
-        return this.employees.stream()
+    public Map<POSITION, List<Employee>> groupByPosition() {
+        return this.employees.values().stream()
                 .collect(Collectors.groupingBy(
                         Employee::getPosition
                 ));
     }
-    public Map<POSITION,Long> countByPosition(){
-        return this.employees.stream()
+
+    public Map<POSITION, Long> countByPosition() {
+        return this.employees.values().stream()
                 .collect(Collectors.groupingBy(
                         Employee::getPosition,
                         Collectors.counting()
                 ));
     }
 
-    public double calcAvgSalary(){
-        return this.employees.stream()
-                .mapToDouble(Employee::getSalary)
-                .average()
-                .orElse(0.0);
-    }
-    public double calcAvgSalary(String company){
-        return this.employees.stream().filter(e -> Objects.equals(e.getCompany(), company))
+    public double calcAvgSalary() {
+        return this.employees.values().stream()
                 .mapToDouble(Employee::getSalary)
                 .average()
                 .orElse(0.0);
     }
 
-    public Optional<Employee> findEmployeeWithHighestSalary(){
-        return this.employees.stream()
+    public double calcAvgSalary(String company) {
+        return this.employees.values().stream()
+                .filter(e -> Objects.equals(e.getCompany(), company))
+                .mapToDouble(Employee::getSalary)
+                .average()
+                .orElse(0.0);
+    }
+
+    public Optional<Employee> findEmployeeWithHighestSalary() {
+        return this.employees.values().stream()
                 .max(Comparator.comparingDouble(Employee::getSalary));
     }
-    public Optional<Employee> findEmployeeWithHighestSalary(String company){
-        return this.employees.stream()
+
+    public Optional<Employee> findEmployeeWithHighestSalary(String company) {
+        return this.employees.values().stream()
                 .filter(e -> Objects.equals(e.getCompany(), company))
                 .max(Comparator.comparingDouble(Employee::getSalary));
     }
     public List<Employee> validateSalaryConsistency(){
-        return this.employees.stream()
+        return this.employees.values().stream()
                 .filter(e -> e.getSalary() < e.getPosition().getBaseSalary())
                 .collect(Collectors.toList());
     }
     public Map<String, CompanyStatistics> getCompanyStatistics() {
-        return employees.stream()
+        return employees.values().stream()
                 .collect(Collectors.groupingBy(
                         Employee::getCompany,
                         Collectors.collectingAndThen(
@@ -106,5 +164,4 @@ public class EmployeeService {
                         )
                 ));
     }
-
 }

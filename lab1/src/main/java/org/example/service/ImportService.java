@@ -2,6 +2,7 @@ package org.example.service;
 
 import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvException;
+import org.example.exception.DuplicateEmailException;
 import org.example.exception.InvalidDataException;
 import org.example.model.Employee;
 import org.example.model.ImportSummary;
@@ -70,10 +71,13 @@ public class ImportService {
                         Employee employee = new Employee(name, surname, email, company, position);
                         employee.setSalary(salary);
 
-                        if (this.e_service.addEmployee(employee)) {
+                        try {
+                            this.e_service.addEmployee(employee);
                             summary.success();
-                        } else {
-                            errorDescription = "Nie można dodać pracownika - prawdopodobnie duplikat emaila.";
+                        } catch (DuplicateEmailException e) {
+                            errorDescription = "Nie można dodać pracownika - duplikat emaila: " + email;
+                        } catch (IllegalArgumentException e) {
+                            errorDescription = "Błąd walidacji danych (serwis): " + e.getMessage();
                         }
 
                     } catch (InvalidDataException e) {

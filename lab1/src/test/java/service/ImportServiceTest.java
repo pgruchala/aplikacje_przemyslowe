@@ -1,5 +1,6 @@
 package service;
 
+import org.example.exception.DuplicateEmailException;
 import org.example.model.Employee;
 import org.example.model.ImportSummary;
 import org.example.service.EmployeeService;
@@ -43,7 +44,8 @@ public class ImportServiceTest {
                     "Anna;Nowak;an@mail.com;TestCorp;MANAGER;13000\n";
             StringReader reader = new StringReader(csvData);
 
-            when(mockEmployeeService.addEmployee(any(Employee.class))).thenReturn(true);
+            when(mockEmployeeService.addEmployee(any(Employee.class)))
+                    .thenAnswer(invocation -> invocation.getArgument(0));
 
             summary = importService.importFromReader(reader);
         }
@@ -77,7 +79,8 @@ public class ImportServiceTest {
                     "Adam;Kot;ak@mail.com;TestCorp;WICEPREZES;18000\n";       // OK
             StringReader reader = new StringReader(csvData);
 
-            when(mockEmployeeService.addEmployee(any(Employee.class))).thenReturn(true);
+            when(mockEmployeeService.addEmployee(any(Employee.class)))
+                    .thenAnswer(invocation -> invocation.getArgument(0));
 
             summary = importService.importFromReader(reader);
         }
@@ -128,8 +131,8 @@ public class ImportServiceTest {
             StringReader reader = new StringReader(csvData);
 
             when(mockEmployeeService.addEmployee(any(Employee.class)))
-                    .thenReturn(true)  //Jan - sukces
-                    .thenReturn(false); //Anna - porażka
+                    .thenAnswer(invocation -> invocation.getArgument(0)) // Pierwsze wywołanie
+                    .thenThrow(new DuplicateEmailException("Test duplicate exception")); // Drugie wywołanie
 
             summary = importService.importFromReader(reader);
         }
@@ -146,8 +149,7 @@ public class ImportServiceTest {
 
         @Test
         void shouldReportDuplicateEmailError() {
-            assertTrue(summary.getErrorList().get(0).contains("prawdopodobnie duplikat emaila"), "Missing duplicate email error");
-        }
+            assertTrue(summary.getErrorList().get(0).contains("duplikat emaila"), "Missing duplicate email error");}
 
         @Test
         void shouldAttemptToAddBothEmployees() {
@@ -161,7 +163,9 @@ public class ImportServiceTest {
         Path testFile = tempDir.resolve("test.csv");
         Files.write(testFile, csvData.getBytes());
 
-        when(mockEmployeeService.addEmployee(any(Employee.class))).thenReturn(true);
+        when(mockEmployeeService.addEmployee(any(Employee.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
         ImportSummary summary = importService.importFromCSV(testFile.toString());
 
         assertEquals(1, summary.getImported());
