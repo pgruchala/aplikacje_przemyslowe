@@ -2,19 +2,53 @@ package org.example.service;
 
 import org.example.exception.DuplicateEmailException;
 import org.example.exception.EmployeeNotFoundException;
-import org.example.model.CompanyStatistics;
-import org.example.model.Employee;
-import org.example.model.EmploymentStatus;
-import org.example.model.POSITION;
+import org.example.model.*;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 
 @Service
 public class EmployeeService {
     private final Map<String, Employee> employees = new HashMap<>();
+
+    private final Map<String, EmployeeDocument> documentsById = new ConcurrentHashMap<>();
+    private final Map<String, List<String>> documentIdsByEmail = new ConcurrentHashMap<>();
+
+    public EmployeeDocument addDocumentMetadata(EmployeeDocument doc) {
+        documentsById.put(doc.getId(), doc);
+        documentIdsByEmail.computeIfAbsent(doc.getEmployeeEmail(), k ->
+                        Collections.synchronizedList(new ArrayList<>()))
+                .add(doc.getId());
+        return doc;
+    }
+
+    public List<EmployeeDocument> getDocumentsByEmail(String email) {
+        List<String> ids = documentIdsByEmail.getOrDefault(email, Collections.emptyList());
+        return ids.stream()
+                .map(documentsById::get) // Pobierz obiekt dokumentu po ID
+                .filter(Objects::nonNull) // Odfiltruj jeśli jakimś cudem null
+                .collect(Collectors.toList());
+    }
+
+    public Optional<EmployeeDocument> getDocumentById(String documentId) {
+        return Optional.ofNullable(documentsById.get(documentId));
+    }
+
+    public Optional<EmployeeDocument> deleteDocumentMetadata(String documentId) {
+        EmployeeDocument doc = documentsById.remove(documentId);
+        if (doc != null) {
+            List<String> ids = documentIdsByEmail.get(doc.getEmployeeEmail());
+            if (ids != null) {
+                ids.remove(documentId);
+            }
+            return Optional.of(doc);
+        }
+        return Optional.empty();
+    }
+
 
     public Employee addEmployee(Employee e) {
         if (e == null || e.getEmail() == null || e.getCompany() == null || e.getName() == null || e.getSurname() == null || e.getPosition() == null) {
